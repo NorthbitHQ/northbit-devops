@@ -1,20 +1,19 @@
-// Global repository configuration for all Gradle projects
-// This automatically adds the Northbit GitHub Packages repository to all builds
-// Requires GITHUB_ACTOR and GITHUB_TOKEN environment variables to be set
+// ~/.gradle/init.d/global.gradle.kts
+// Global repository configuration for all Gradle builds.
+// Adds Northbit GitHub Packages repository for both plugins and dependencies
+// when GITHUB_ACTOR and GITHUB_TOKEN are present.
 
-// Configure plugin repositories globally
-settingsEvaluated {
+val githubActor: String? = System.getenv("GITHUB_ACTOR")
+val githubToken: String? = System.getenv("GITHUB_TOKEN")
+
+// Configure plugin repositories once settings are available
+gradle.settingsEvaluated {
     pluginManagement {
         repositories {
             mavenLocal()
             gradlePluginPortal()
             mavenCentral()
-            maven {
-                url = uri("https://repo.spring.io/milestone")
-            }
-
-            val githubActor: String? = System.getenv("GITHUB_ACTOR")
-            val githubToken: String? = System.getenv("GITHUB_TOKEN")
+            maven { url = uri("https://repo.spring.io/milestone") }
 
             if (githubActor != null && githubToken != null) {
                 maven {
@@ -24,29 +23,18 @@ settingsEvaluated {
                         username = githubActor
                         password = githubToken
                     }
-                    content {
-                        includeGroup("com.northbit")
-                    }
                 }
             }
         }
     }
 }
 
-// Configure dependency repositories globally
-allprojects {
+// Configure dependency repositories for all projects
+gradle.allprojects {
     repositories {
-        // Standard repositories needed for most dependencies
         mavenLocal()
         mavenCentral()
-        maven {
-            url = uri("https://repo.spring.io/milestone")
-        }
-
-        // GitHub Packages repository for Northbit dependencies
-        // Only uses environment variables for security
-        val githubActor: String? = System.getenv("GITHUB_ACTOR")
-        val githubToken: String? = System.getenv("GITHUB_TOKEN")
+        maven { url = uri("https://repo.spring.io/milestone") }
 
         if (githubActor != null && githubToken != null) {
             maven {
@@ -56,11 +44,7 @@ allprojects {
                     username = githubActor
                     password = githubToken
                 }
-                content {
-                    includeGroup("com.northbit")
-                }
             }
         }
     }
 }
-
